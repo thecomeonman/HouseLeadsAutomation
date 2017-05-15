@@ -4,6 +4,8 @@ When 2 or more flatmates are looking for a place to stay, over multiple weekends
 
 These scripts scrape relevant postings from 4 popular websites and keep it in a simple, easy to compare format on Google Sheets.
 
+![Sample screenshot](/Screenshots/SheetExample.png?raw=true)
+
 ## Installation
 The scripts are written in the open source language, R. You need to:
 1. Install R from https://cran.r-project.org/
