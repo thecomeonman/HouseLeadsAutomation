@@ -10,7 +10,7 @@ These scripts scrape relevant postings from 4 popular websites and keep it in a 
 The scripts are written in the open source language, R. You need to:
 1. Install R from https://cran.r-project.org/
 2. Install RStudio from https://www.rstudio.com/
-3. I've built this using libraries that others have contributed to R and you need to install those libraries too. The first time ever that you open RStudio, you need to have access to the internet and run this command - `install.packages('googlesheets','data.table','dplyr','rjson','httpuv')`. 
+3. I've built this using libraries that others have contributed to R and you need to install those libraries too. The first time ever that you open RStudio, you need to have access to the internet and run this command - `install.packages(c('googlesheets','data.table','dplyr','rjson','httpuv'))`. 
 
 ## Running
 1. You need to download this repository to your computer. There is a .zip option.
