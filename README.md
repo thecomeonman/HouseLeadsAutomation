@@ -13,7 +13,7 @@ The scripts are written in the open source language, R. You need to:
 3. I've built this using libraries that others have contributed to R and you need to install those libraries too. The first time ever that you open RStudio, you need to have access to the internet and run this command - `install.packages(c('googlesheets','data.table','dplyr','rjson','httpuv'))`. 
 
 ## Running
-1. You need to download this repository to your computer. There is a .zip option.
+1. You need to download this repository to your computer. You can download a zip file and expand it on your hard drive.
 2. Upload Automated House Leads.xlsx to your Google Drive and share it with your flatmates. Your local copy of the file is irrelevant now. You can delete it if you want even. Everything is going to happen on Google sheets.
     - Instructions to add the areas you're interested in, the budgets, etc. are in the Instructions sheet of this file.
     - If, for some reason, you want to change the name of the file then you need to change the value of the `cFileName` variable in each of the files in the ScrapingScripts folder.
@@ -31,7 +31,7 @@ The scripts are written in the open source language, R. You need to:
 - Visualising the data. I thought of implementing a parallel coordinates based chart to read all this output and show typical combinations of houses, the cheaper deals, etc. but just the listings were enough for me so I didn't try.
 
 ## Bug reports
-File an issue here or post a comment on the blog post I wrote about it -
+File an issue here or post a comment on the blog post - http://thecomeonman.blogspot.com/2017/05/house-leads-automation.html
 
 ## FAQ
 
