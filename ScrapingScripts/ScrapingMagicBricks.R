@@ -5,7 +5,7 @@ library(data.table)
 library(dplyr)
 library(rjson)
 
-cFileName = 'Automated House Leads'
+cFileName = 'Automated House Leads 2018'
 cResultsSheetName = 'MagicBricks'
 cSearchURLPattern = 'magicbricks'
 
@@ -171,53 +171,48 @@ if ( length (vcURLsToScrape) > 0 ) {
 
             # Removing all the useless content which aren't details
             # of the property being looked at
+      
+
             vcDetails =  vcWebpage[
                which(grepl(x = vcWebpage, pattern = 'propInfoBlockInn')):
                which(grepl(x = vcWebpage, pattern = 'belowSec'))
             ]
 
-
             # Getting all the details
-            vcDetails = paste(vcDetails, collapse = '')
-
-            vcDetails = unlist(strsplit(vcDetails, 'p_title'))
-            vcDetails = unlist(strsplit(vcDetails, 'p_value'))
-            vcDetails = unlist(strsplit(vcDetails, 'p_infoRow'))
-            vcDetails = unlist(strsplit(vcDetails, 'dataLabel'))
-            vcDetails = unlist(strsplit(vcDetails, 'dataVal'))
-            vcDetails = gsub(vcDetails, pattern = "<.*?>", replacement = '')
-            vcDetails = gsub(vcDetails, pattern = "^.*?>|<.*?$", replacement = '')
-            vcDetails = gsub(vcDetails, pattern = "See Dimensions.*?$", replacement = '')
-            vcDetails = vcDetails[vcDetails != '']
+            # vcDetails = paste(vcDetails, collapse = ''
 
             dtTemp = data.table(
-               Category = vcDetails[c(T,F)],
-               Value = vcDetails[c(F,T)]
+               Category = paste(vcDetails[grep(vcDetails, pattern  = 'p_title')], vcDetails[grep(vcDetails, pattern  = 'p_title') + 1]),
+               Value = paste(vcDetails[grep(vcDetails, pattern  = 'p_value')], vcDetails[grep(vcDetails, pattern  = 'p_value') + 1])
             )
 
-            vcDetails =  vcWebpage[
-               which(grepl(x = vcWebpage, pattern = 'propDetailDescriptionId')):
-               which(grepl(x = vcWebpage, pattern = 'ctaReport'))
-            ]
-            if ( vcDetails[6] == '</div>' ) {
-               vcDetails[6] = 'No description</div>'
-            }
-            vcDetails = paste(vcDetails, collapse = '')
+            dtTemp[, Category := gsub(x = Category, pattern = '.*p_title\">', replacement = '')]
+            dtTemp[, Category := gsub(x = Category, pattern = '<.*', replacement = '')]
 
-            vcDetails = unlist(strsplit(vcDetails, 'p_title'))
-            vcDetails = unlist(strsplit(vcDetails, 'p_value'))
-            vcDetails = unlist(strsplit(vcDetails, 'p_infoRow'))
-            vcDetails = unlist(strsplit(vcDetails, 'dataLabel'))
-            vcDetails = unlist(strsplit(vcDetails, 'dataVal'))
-            vcDetails = gsub(vcDetails, pattern = "<.*?>", replacement = '')
-            vcDetails = gsub(vcDetails, pattern = "^.*?>|<.*?$", replacement = '')
-            vcDetails = vcDetails[vcDetails != '']
+            dtTemp[, Value := gsub(x = Value, pattern = '</div.*', replacement = '')]
+            dtTemp[, Value := gsub(x = Value, pattern = '.*>', replacement = '')]
 
             dtTemp = rbind(
                dtTemp,
                data.table(
-                  Category = vcDetails[c(T,F)],
-                  Value = vcDetails[c(F,T)]
+                  Category = 'Rent',
+                  Value = gsub(
+                     x = gsub(
+                        x = vcWebpage[grep(x = vcWebpage, pattern = 'itemprop=\"price\"')],
+                        pattern = '.*content=\"',
+                        replacement = ''
+                     ),
+                     pattern = '\".*',
+                     replacement = ''
+                  )
+               )
+            )
+
+            dtTemp = rbind(
+               dtTemp,
+               data.table(
+                  Category = 'Bedrooms',
+                  Value = vcDetails[grep(vcDetails, pattern  = 'seeBedRoomDimen') + 1][1]
                )
             )
 
@@ -234,18 +229,6 @@ if ( length (vcURLsToScrape) > 0 ) {
                data.table(
                   Category = 'Locality',
                   Value = cLocality
-               )
-            )
-
-            dtTemp = rbind(
-               dtTemp,
-               data.table(
-                  Category = 'Rent',
-                  Value = gsub(
-                      x = grep(x = vcWebpage, pattern = 'rupee', value = T)[1], 
-                      pattern = '.*>', 
-                      replacement = ''
-                  )
                )
             )
 
@@ -296,6 +279,7 @@ if ( length (vcURLsToScrape) > 0 ) {
 
 }
 
+# dtListings2 = copy(dtListings)
 
 # Cleaning the data
 # =============================================================================
@@ -326,10 +310,10 @@ if ( exists('dtListings') ) {
    dtListings = dcast(
       dtListings, 
       ZZURL ~ Category, 
-      value.var = 'Value'
+      value.var = 'Value',
+      fun.aggregate = function(x) paste(x, collapse = ',')
    )
-   setDT(dtListings)
-
+   
    # Changing column names from their website name to something
    # that R can accept
    setnames(
@@ -361,7 +345,7 @@ if ( exists('dtListings') ) {
             grep(
                x = get(dtFilters[i, Column]), 
                pattern = dtFilters[i, Value], 
-               invert = dtFilters[i, Filter]
+               invert = dtFilters[i, Invert]
             ),
             c(
                'ZZCalledBy',

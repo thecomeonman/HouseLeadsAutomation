@@ -15,12 +15,14 @@ The scripts are written in the open source language, R. You need to:
 ## Running
 1. You need to download this repository to your computer. You can download a zip file and expand it on your hard drive.
 2. Upload Automated House Leads.xlsx to your Google Drive and share it with your flatmates. Your local copy of the file is irrelevant now. You can delete it if you want even. Everything is going to happen on Google sheets.
+    - You have to open this file in Google Drive, where it will ask you if you want to open it with Google Sheets instead. Open it with Google Sheets.        After this, you should be able to edit cells, etc. and not just see a snapshot of the file.
     - Instructions to add the areas you're interested in, the budgets, etc. are in the Instructions sheet of this file.
     - If, for some reason, you want to change the name of the file then you need to change the value of the `cFileName` variable in each of the files in the ScrapingScripts folder.
 3. Open Wrapper.R ( in RStudio preferably. Notepad, etc. should also be fine. NOT in MS Word, ) and change value of the variable `cRootDirectory` to point to the directory in which the Wrapper.R file is present. Remember to use `/` and not `\` in the path.
 4. There are multiple ways to now run this. Two of the ways are:
     - Pasting all the lines in the RStudio console and then pressing enter.
     - Selecting all the lines in the RStudio editor and pressing ctrl + enter.
+5. On running wrapper.R, you will need to permit the code to read adn write to your Google sheet. The code will automatically open the link in your default browser for you to give these permissions. I / some other evil entity doesn't get access to your account, don't worry.
 5. Except for what has been mentioned above, avoid adding new files or modifying anything inside this folder.
 6. You can rerun Wrapper.R any number of times you wish to get the latest results.
 

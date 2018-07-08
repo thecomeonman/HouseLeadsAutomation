@@ -5,7 +5,7 @@ library(data.table)
 library(dplyr)
 library(rjson)
 
-cFileName = 'Automated House Leads'
+cFileName = 'Automated House Leads 2018'
 cResultsSheetName = 'NoBroker'
 cSearchURLPattern = 'nobroker'
 

@@ -5,7 +5,7 @@ library(data.table)
 library(dplyr)
 library(rjson)
 
-cFileName = 'Automated House Leads'
+cFileName = 'Automated House Leads 2018'
 cResultsSheetName = '99Acres'
 cSearchURLPattern = '99acres'
 
@@ -134,6 +134,12 @@ repeat {
       vcWebpageListingsHREF2 = gsub(
          x = vcWebpageListingsHREF2,
          pattern = ' itemprop.*',
+         replacement = ''
+      )
+
+      vcWebpageListingsHREF2 = gsub(
+         x = vcWebpageListingsHREF2,
+         pattern = ' data-fsl.*',
          replacement = ''
       )
 
@@ -294,76 +300,57 @@ if ( length (vcURLsToScrape) > 0 ) {
 
             vcTable = grep(
                x = vcTable,
-               pattern = 'pdFactHead|pdFactVal',
+               pattern = 'span.*id',
                value = T
             )
 
-            vcTable = strsplit(
-               unlist(
-                  strsplit(
-                     vcTable, 
-                     'pdFactHead'
-                  )
-               ),
-               'pdFactVal'
-            )
-
-            vcTable = vcTable[sapply(vcTable, length) > 1]
-
             dtTemp = data.table(
-               Category = sapply(
-                  vcTable,
-                  function ( cText )  {
-
-                     gsub(
-                        x = cText[[1]],
-                        pattern = '.*<span.*?>(.*?)</span>.*',
-                        replacement = '\\1'
-                     )
-
-                  }
+               Category = gsub(
+                  x = vcTable,
+                  pattern = '.*span.*id=\"(.*?)\">.*',
+                  replacement = '\\1'
                ),
 
-               Value = sapply(
-                  vcTable,
-                  function ( cText )  {
-
-                     gsub(
-                        x = cText[[2]],
-                        pattern = '^.*?>|<.*?>|<.*?$',
-                        replacement = ''
-                     )
-
-                  }
+               Value = gsub(
+                  x = gsub(
+                     x = vcTable,
+                     pattern = '.*\">',
+                     replacement = ''
+                  ),
+                  pattern = '<.*',
+                  replacement = ''
                )
             )
 
             dtTemp = dtTemp[!grepl(x = Category, pattern = '>|<')]
 
-            vcFacilities = unlist(
-               strsplit(
-                  grep(
-                     vcWebpage, 
-                     pattern = 'amnIcons', 
-                     value = T
-                  ), 
-                  'amnIcons'
-               )
+            vcFacilities = vcWebpage[
+               grep(
+                  vcWebpage, 
+                  pattern = 'amnIcons'
+               ) + 1
+            ]
+
+            vcFacilities = gsub(
+               x = vcFacilities,
+               pattern = '</div>',
+               replacement = ''
             )
 
-            vcFacilities = grep(
-               x = vcFacilities[-1],
-               pattern = 'disabled',
-               value = T,
-               invert = T
+            vcFacilities = gsub(
+               x = vcFacilities,
+               pattern = '<div.*>',
+               replacement = ''
+            )
+
+            vcFacilities = gsub(
+               x = vcFacilities,
+               pattern = ' *$|^ *',
+               replacement = ''
             )
 
             vcFacilities = paste(
-               gsub(
-                  x = gsub(x = vcFacilities, pattern = '</div.*', replacement = '\\1'),
-                  pattern = '.*div>',
-                  replacement = ''
-               ), 
+               vcFacilities[vcFacilities != ''], 
                collapse = ', '
             )
 
@@ -417,9 +404,10 @@ if ( exists('dtListings') ) {
    )
 
    # Some extra junk which doesn't get cleaned
+   dtListings[, Rent := pdPrice2]
+   dtListings[, pdPrice2 := NULL]
    dtListings[, Rent := gsub(x = Rent, pattern = '.*;', replacement = '')]
    dtListings[, Rent := gsub(x = Rent, pattern = ' |[[:punct:]]|[[:alpha:]]', replacement = '')]
-   dtListings[, Furnishing := gsub(x = Furnishing, pattern = ' View Furnishings', replacement = '')]
 
  
 }
@@ -429,6 +417,7 @@ if ( exists('dtListings') ) {
 # =============================================================================
 
 if ( exists('dtListings') ) {
+
    #  Running the automated filter
    dtListings[, ZZStatus := '']
    dtListings[, ZZComments := '']
@@ -443,7 +432,7 @@ if ( exists('dtListings') ) {
             grep(
                x = get(dtFilters[i, Column]), 
                pattern = dtFilters[i, Value], 
-               invert = dtFilters[i, Filter]
+               invert = dtFilters[i, Invert]
             ),
             c(
                'ZZCalledBy',

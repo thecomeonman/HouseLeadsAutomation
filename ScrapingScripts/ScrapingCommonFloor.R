@@ -5,7 +5,7 @@ library(data.table)
 library(dplyr)
 library(rjson)
 
-cFileName = 'Automated House Leads'
+cFileName = 'Automated House Leads 2018'
 cResultsSheetName = 'CommonFloor'
 cSearchURLPattern = 'commonfloor'
 
@@ -79,118 +79,15 @@ repeat {
             )
          )
       )
-      
-      # Removing all the unnecessary data from this webpage
-      # and get the section which has the search results
-      cStringToChopOffAfterSuggestion = 'No more matching properties for your search'
-      vcWebpage = vcWebpage[
-         grepl(
-            x = vcWebpage, 
-            pattern = cStringToChopOffAfterSuggestion
-         )
-      ]
 
-      vcWebpage = gsub(
-         x = vcWebpage, 
-         pattern = paste0(cStringToChopOffAfterSuggestion,'.*'), 
-         replacement = ''
-      )
-      
-      vcWebpage = strsplit(
-         x = vcWebpage, 
-         split = 'card cards-list'
-      )
-      vcWebpage = unlist(vcWebpage)
-      vcWebpage = vcWebpage[
-         grepl(
-            x = vcWebpage, 
-            pattern = 'row listing'
-         )
-      ]
-      
-      
-      # Getting the apartment complex pages to search through later
-      vcWebpagesToSearch = grep(
-         x = vcWebpage, 
-         pattern = 'View All Properties', 
+      vcURLsToScrapeFromThisPage = grep(
+         x = vcWebpage,
+         pattern = 'inforow clearfix',
          value = T
       )
 
-      vcWebpagesToSearch = unlist(
-         strsplit(
-            vcWebpagesToSearch, 
-            split = 'href'
-         )
-      )
-      vcWebpagesToSearch = grep(
-         vcWebpagesToSearch, 
-         pattern = 'View All Properties', 
-         value = T
-      )
-      vcWebpagesToSearch = gsub(
-         vcWebpagesToSearch, 
-         pattern = '^="|" target.*', 
-         replacement = ''
-      )
-
-      if ( length( vcWebpagesToSearch) > 0 ) {
-         print(paste('Will also search', vcWebpagesToSearch))
-      }
-
-      vcWebpagesAddToSearch = c(
-         vcWebpagesAddToSearch,
-         vcWebpagesToSearch
-      )
-      
-
-      # Getthing the non-apartment listings out from this page
-      vcWebpageListings = grep(
-         x = vcWebpage, 
-         pattern = 'View All Properties', 
-         value = T, 
-         invert = T
-      )
-
-      vcWebpageListings = gsub(
-         x = vcWebpageListings, 
-         pattern = '.*?href', 
-         replacement = ''
-      )
-
-      vcWebpageListings = gsub(
-         x = vcWebpageListings, 
-         pattern = 'href ?= ?"(/listing/.*?)".*', 
-         replacement = '\\1'
-      ) 
-
-      vcWebpageListings = vcWebpageListings[nchar(vcWebpageListings)>0]
-      
-      if ( length(vcWebpageListings) > 0 ) {
          
-         vcListingURLs = gsub(
-            gsub(
-               unlist(
-                  strsplit(
-                     x = vcWebpageListings, 
-                     split = 'href'
-                  )
-               ), 
-               pattern = '" target.*', 
-               replacement = ''
-            ), 
-            pattern = '= *?"', 
-            replacement = ''
-         )
-
-         print(paste('Adding',vcListingURLs))
-
-         vcURLsToScrapeFromThisPage = c(
-            vcURLsToScrapeFromThisPage,
-            vcListingURLs
-         )
-
-         
-      } else {
+      if ( length(vcURLsToScrapeFromThisPage) == 0 )  {
 
          # If there were no search results to be added from this page
          # then get out of the loop
@@ -219,60 +116,22 @@ rm(vcWebpage)
 
 
 
-# Scraping search reults of apartment complexes
-# =============================================================================
-
-vcWebpagesAddToSearch = paste0('https://www.commonfloor.com', unique(vcWebpagesAddToSearch))
-
-i=1
-
-repeat {
-   
-   if ( i > length(vcWebpagesAddToSearch) ) {
-      break
-   }
-   
-   print(paste('Searching',vcWebpagesAddToSearch[i]))
-
-   vcWebpage = readLines(vcWebpagesAddToSearch[i])
-   vcListingURLs = grep(vcWebpage, pattern = '/listing/', value =  T)
-   vcListingURLs = gsub(x = vcListingURLs, pattern = '.*?href', replacement = '') 
-   vcListingURLs = gsub(vcListingURLs, pattern = '^="|" *?target.*$', replacement = '')
-   vcListingURLs = vcListingURLs[nchar(vcListingURLs)>0]
-   
-   if ( length(vcListingURLs) > 0 ) {
-      
-      print(paste('Adding',vcListingURLs))
-
-      vcURLsToScrape = c(
-         vcURLsToScrape,
-         vcListingURLs
-      )
-
-      
-   }
-   
-   i = i + 1
-   
-}
-
-
-rm(vcWebpage)
-
-
 
 # Scraping details of the properties
 # =============================================================================
 
-# the URL by default doesn't have the full path
-vcURLsToScrape = paste0('https://www.commonfloor.com', unique(vcURLsToScrape))
+if ( length (vcURLsToScrape) > 0 ) {
 
-# Removing the ones which haave been queried already
-vcURLsToScrape = setdiff(
-   vcURLsToScrape,
-   vcAlreadySeenListings
-)
+   # the URL by default doesn't have the full path
+   vcURLsToScrape = paste0('https://www.commonfloor.com', unique(vcURLsToScrape))
 
+   # Removing the ones which haave been queried already
+   vcURLsToScrape = setdiff(
+      vcURLsToScrape,
+      vcAlreadySeenListings
+   )
+
+}
 
 # If there are any new URLs to scrape left then scrape
 if ( length (vcURLsToScrape) > 0 ) {

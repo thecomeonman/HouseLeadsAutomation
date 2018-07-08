@@ -1,6 +1,6 @@
 rm(list = ls())
 
-cRootDirectory = '/home/ask/Desktop/HouseHunt'
+cRootDirectory = '/home/ask/Desktop/HouseLeadsAutomation'
 
 setwd(cRootDirectory)
 
