@@ -61,22 +61,40 @@ repeat {
 
       print(paste('Page number',iPageNo))
 
+      cPageBeingRead = paste0(
+         gsub(
+            x = vcWebpageSearch[i], 
+            pattern = 'page=.*?&', 
+            replacement = paste0('page=',iPageNo, '&')
+         )
+      )
+
+      print(cPageBeingRead)
+
       # Substituting the page number in the search page URL
       vcWebpage = readLines(
-         paste0(
-            gsub(
-               x = vcWebpageSearch[i], 
-               pattern = 'page=.*?&', 
-               replacement = paste0('page=',iPageNo, '&')
-            )
-         )
+         cPageBeingRead
       )
 
       # Removing all the unnecessary data from this webpage
       # and get the section which has the search results
+      
+      iLastResultLine = grep(
+         x = vcWebpage,
+         pattern = 'No More Results'
+      )
+
+      if ( length(iLastResultLine) == 0 ) {
+
+         iLastResultLine = length(vcWebpage)
+
+      }
+
       vcListingURLs = vcWebpage[
-         grepl(
-            x = vcWebpage, 
+         grep(
+            x = vcWebpage[
+               1:iLastResultLine         
+            ], 
             pattern = 'resultBlockWrapper'
          )
       ]
@@ -96,7 +114,7 @@ repeat {
 
       vcListingURLs = gsub(
          x = vcListingURLs,
-         pattern = "'.*",
+         pattern = "',.*",
          replacement = ''
       )
 
@@ -110,12 +128,16 @@ repeat {
          vcURLsToScrapeFromThisPage, 
          vcListingURLs
       )
+      
 
       vcURLsToScrapeFromThisPage = unique(vcURLsToScrapeFromThisPage)
 
       # If there were no search results to be added from this page
       # then get out of the loop
-      if ( length(vcURLsToScrapeFromThisPage) == iPreviousLength ) {
+      if ( 
+         length(vcURLsToScrapeFromThisPage) == iPreviousLength |
+         iLastResultLine < length(vcWebpage)
+      ) {
 
          break
 
@@ -125,7 +147,8 @@ repeat {
       iPageNo = iPageNo + 1
       
    }
-      
+
+   
    # Appending the results from this search to all the results from
    # previous searches
    vcURLsToScrape = c(
@@ -407,8 +430,9 @@ if ( exists('dtListings') ) {
    # Deleting previous sheet and adding data as a new sheet
    # This is needed in case there are any new 
    # columns that go added in this iteration
-   AHH %>%
-      gs_ws_delete(ws = cResultsSheetName)
+   # AHH %>%
+      # gs_ws_delete(ws = cResultsSheetName)
+   AHH = gs_ws_rename(AHH, from = cResultsSheetName, to = 'temp')
 
    AHH <- gs_title(cFileName)
 
@@ -419,5 +443,8 @@ if ( exists('dtListings') ) {
          trim = TRUE, 
          verbose = FALSE
       )
+
+   AHH %>%
+      gs_ws_delete(ws = 'temp')
 
 }

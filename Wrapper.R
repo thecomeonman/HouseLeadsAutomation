@@ -8,6 +8,7 @@ setwd('ScrapingScripts')
 
 sapply(
    list.files(),
+   # grep(x = list.files(), pattern = '99', invert = T, value = T),
    function(x) {
 
       print(x)

@@ -311,8 +311,9 @@ if ( exists('dtListings') ) {
    # Deleting previous sheet and adding data as a new sheet
    # This is needed in case there are any new 
    # columns that go added in this iteration
-   AHH %>%
-      gs_ws_delete(ws = cResultsSheetName)
+   # AHH %>%
+      # gs_ws_delete(ws = cResultsSheetName)
+   AHH = gs_ws_rename(AHH, from = cResultsSheetName, to = 'temp')
 
    AHH <- gs_title(cFileName)
 
@@ -323,5 +324,9 @@ if ( exists('dtListings') ) {
          trim = TRUE, 
          verbose = FALSE
       )
+
+   AHH %>%
+      gs_ws_delete(ws = 'temp')
+
 
 }
