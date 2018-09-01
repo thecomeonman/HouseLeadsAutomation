@@ -428,22 +428,26 @@ if ( exists('dtListings') ) {
 
       for ( i in seq(nrow(dtFilters))) {
 
-         dtListings[
-            grep(
-               x = get(dtFilters[i, Column]), 
-               pattern = dtFilters[i, Value], 
-               invert = dtFilters[i, Invert]
-            ),
-            c(
-               'ZZCalledBy',
-               'ZZStatus',
-               'ZZComments'
-            ) := list(
-               'Automated', 
-               paste0(ZZStatus, dtFilters[i, Status], '; '),
-               paste0(ZZComments, dtFilters[i, Comment], '; ')
-            )
-         ]
+         if ( dtFilters[i, Column] %in% colnames(dtListings) ) {
+
+            dtListings[
+               grep(
+                  x = get(dtFilters[i, Column]), 
+                  pattern = dtFilters[i, Value], 
+                  invert = dtFilters[i, Invert]
+               ),
+               c(
+                  'ZZCalledBy',
+                  'ZZStatus',
+                  'ZZComments'
+               ) := list(
+                  'Automated', 
+                  paste0(ZZStatus, dtFilters[i, Status], '; '),
+                  paste0(ZZComments, dtFilters[i, Comment], '; ')
+               )
+            ]
+
+         }
 
       }
 
